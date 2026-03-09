@@ -1,0 +1,699 @@
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>养老金未来退休金预测计算器</title>
+    <style>
+        * {margin: 0; padding: 0; box-sizing: border-box;}
+        body {font-family: "Microsoft YaHei", Arial, sans-serif; background: #f5f7fa; padding: 20px;}
+        
+        .container {max-width: 1200px; margin: 0 auto; background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);}
+        
+        .header {background: linear-gradient(135deg, #1890ff, #40a9ff); padding: 25px 30px; color: #fff; border-radius: 10px 10px 0 0; text-align: center;}
+        .header h1 {font-size: 28px; font-weight: 600; margin-bottom: 8px;}
+        .header p {font-size: 15px; opacity: 0.95;}
+        
+        .main-content {display: flex; padding: 20px; gap: 20px;}
+        
+        .left-panel {width: 320px; flex-shrink: 0;}
+        
+        .section {margin-bottom: 20px;}
+        .section-title {font-size: 14px; font-weight: 600; color: #333; margin-bottom: 10px; padding-left: 8px; border-left: 3px solid #1890ff;}
+        
+        .param-item {margin-bottom: 12px;}
+        .param-item label {display: block; font-size: 13px; color: #333; margin-bottom: 4px;}
+        .param-item input, .param-item select {width: 100%; padding: 8px 10px; border: 1px solid #d9d9d9; border-radius: 5px; font-size: 14px; background: #f6ffed;}
+        .param-item input:focus {outline: none; border-color: #52c41a;}
+        
+        .btn {width: 100%; padding: 12px; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; background: #1890ff; color: #fff; transition: all 0.3s; margin-top: 10px;}
+        .btn:hover {background: #40a9ff;}
+        
+        .btn-secondary {background: #52c41a;}
+        .btn-secondary:hover {background: #73d13d;}
+        
+        textarea {width: 100%; height: 100px; padding: 10px; border: 1px solid #d9d9d9; border-radius: 5px; font-size: 12px; line-height: 1.5; resize: vertical; background: #f6ffed;}
+        textarea:focus {outline: none; border-color: #52c41a;}
+        
+        .right-panel {flex: 1;}
+        
+        .retire-info {display: flex; gap: 10px; margin-bottom: 15px; padding: 12px; background: #fafafa; border-radius: 8px; border: 1px solid #e8e8e8;}
+        .retire-item {flex: 1; text-align: center;}
+        .retire-item label {font-size: 11px; color: #666;}
+        .retire-item .value {font-size: 14px; font-weight: bold; color: #1890ff; margin-top: 4px;}
+        
+        .result-cards {display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 15px;}
+        .result-card {background: #fafafa; border: 1px solid #e8e8e8; border-radius: 8px; padding: 12px; text-align: center;}
+        .result-card.highlight {background: linear-gradient(135deg, #667eea, #764ba2); color: #fff;}
+        .result-card.highlight label {color: rgba(255,255,255,0.9);}
+        .result-card.highlight .value {color: #fff;}
+        .result-card label {font-size: 11px; color: #666;}
+        .result-card .value {font-size: 14px; font-weight: bold; color: #1890ff; margin-top: 4px;}
+        
+        table {width: 100%; border-collapse: collapse; font-size: 11px;}
+        th, td {padding: 6px 4px; text-align: center; border: 1px solid #e8e8e8;}
+        th {background: #fafafa; color: #333; font-weight: 600;}
+        tr:hover {background: #f9f9f9;}
+        
+        .error {display: none; background: #fff2f0; border: 1px solid #ffccc7; color: #ff4d4f; padding: 10px; border-radius: 6px; margin-bottom: 15px; font-size: 13px;}
+        
+        @media (max-width: 900px) {
+            .main-content {flex-direction: column;}
+            .left-panel {width: 100%;}
+            .result-cards {grid-template-columns: repeat(2, 1fr);}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>养老金未来退休金预测计算器</h1>
+            <p>复制PDF文本 → 自动解析 → 预测未来退休金</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="section">
+                    <div class="section-title">第一步：输入参数</div>
+                    
+                    <div class="param-item">
+                        <label>退休职工类型</label>
+                        <select id="workerType">
+                            <option value="male">男职工(60岁)</option>
+                            <option value="female50">女工人(50岁)</option>
+                            <option value="female55">女干部(55岁)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>出生年月(YYYYMM)</label>
+                        <input type="text" id="birthMonth" placeholder="如：196803">
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>参加工作日期(YYYYMM)</label>
+                        <input type="text" id="workStartMonth" placeholder="如：199207">
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>建账日期(YYYYMM)</label>
+                        <input type="text" id="accountStartMonth" value="199601">
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>计发基数增长率(每年%)</label>
+                        <input type="number" id="baseGrowthRate" value="3" step="0.1">
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>上年社平工资增长率(每年%)</label>
+                        <input type="number" id="wageGrowthRate" value="3" step="0.1">
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>当前年份(YYYY)</label>
+                        <input type="number" id="currentYear" value="2026" placeholder="如：2026">
+                        <span style="font-size:11px;color:#666;">※ 使用上一年年度的计发基数</span>
+                    </div>
+                    
+                    <div class="param-item">
+                        <label>当前计发基数(元)</label>
+                        <input type="number" id="currentBase" placeholder="如：7746">
+                    </div>
+                </div>
+                
+                <div class="section">
+                    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                        <span>第二步：复制PDF文本</span>
+                        <button class="btn" id="legendBtn" style="width:auto;padding:4px 12px;font-size:12px;margin:0;background:#722ed1;">图例</button>
+                    </div>
+                    <textarea id="pdfText" placeholder="打开《甘肃省城镇企业职工基本养老保险个人账户表》PDF（使用WPS、福昕等） →选择从起始年第一行第一列至最后一年最后一列（如：1996-2006） → Ctrl+C复制 → 粘贴到此"></textarea>
+                    <button class="btn btn-secondary" id="parseBtn">解析数据</button>
+                    <button class="btn" id="resetBtn" style="margin-top:10px;background:#1890ff;">重置全部</button>
+                </div>
+                
+                <div class="error" id="error"></div>
+            </div>
+            
+            <div class="right-panel">
+                <div class="retire-info" id="retireInfo">
+                    <div class="retire-item">
+                        <label>法定退休日期</label>
+                        <div class="value" id="normalDate">-</div>
+                    </div>
+                    <div class="retire-item">
+                        <label>法定计发月数</label>
+                        <div class="value" id="normalMonths">-</div>
+                    </div>
+                    <div class="retire-item">
+                        <label>延迟退休日期</label>
+                        <div class="value" id="delayedDate">-</div>
+                    </div>
+                    <div class="retire-item">
+                        <label>延迟计发月数</label>
+                        <div class="value" id="delayedMonths">-</div>
+                    </div>
+                </div>
+                
+                <div class="result-cards">
+                    <div class="result-card">
+                        <label>起始年度</label>
+                        <div class="value" id="startYear">-</div>
+                    </div>
+                    <div class="result-card">
+                        <label>终止年度</label>
+                        <div class="value" id="endYear">-</div>
+                    </div>
+                    <div class="result-card">
+                        <label>平均指数</label>
+                        <div class="value" id="avgIndex">-</div>
+                    </div>
+                    <div class="result-card">
+                        <label>个人账户储存额</label>
+                        <div class="value" id="accountBalance">-</div>
+                    </div>
+                    <div class="result-card">
+                        <label>退休年份</label>
+                        <div class="value" id="retireYear">-</div>
+                    </div>
+                </div>
+                
+                <div id="resultSection" style="display:none;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                        <span style="font-size:13px;font-weight:600;color:#333;">年度数据明细</span>
+                        <button class="btn" id="toggleTableBtn" style="width:auto;padding:6px 15px;font-size:12px;margin:0;">展开全部</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>年度</th>
+                                <th>上年社平</th>
+                                <th>月缴费基数</th>
+                                <th>指数</th>
+                                <th>累计储存额</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dataTable"></tbody>
+                    </table>
+                    
+                    <button class="btn" id="calcBtn" style="margin-top:15px;width:auto;padding:12px 40px;">计算退休金</button>
+                    
+                    <div id="finalResult" style="display:none;margin-top:20px;">
+                        <div class="result-cards">
+                            <div class="result-card">
+                                <label>基础养老金</label>
+                                <div class="value" id="basicPension">¥0</div>
+                            </div>
+                            <div class="result-card">
+                                <label>个人账户养老金</label>
+                                <div class="value" id="personalPension">¥0</div>
+                            </div>
+                            <div class="result-card">
+                                <label>过渡性养老金</label>
+                                <div class="value" id="transitionPension">¥0</div>
+                            </div>
+                            <div class="result-card">
+                                <label>调节金</label>
+                                <div class="value" id="adjustmentPension">¥0</div>
+                            </div>
+                            <div class="result-card highlight">
+                                <label>养老金合计</label>
+                                <div class="value" id="totalPension">¥0</div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-cards" style="margin-top:10px;display:none;">
+                            <div class="result-card">
+                                <label>缴费年限</label>
+                                <div class="value" id="totalYears">-</div>
+                            </div>
+                            <div class="result-card">
+                                <label>视同缴费年限</label>
+                                <div class="value" id="yearsAsPension">-</div>
+                            </div>
+                            <div class="result-card">
+                                <label>退休时平均指数</label>
+                                <div class="value" id="finalAvgIndex">-</div>
+                            </div>
+                            <div class="result-card">
+                                <label>退休时账户储存额</label>
+                                <div class="value" id="finalAccount">-</div>
+                            </div>
+                            <div class="result-card">
+                                <label>退休时计发基数</label>
+                                <div class="value" id="finalBase">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图例弹窗 -->
+    <div id="legendModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+        <div style="background:#fff;border-radius:10px;padding:20px;max-width:90%;max-height:90%;overflow:auto;position:relative;">
+            <button onclick="document.getElementById('legendModal').style.display='none'" style="position:absolute;top:10px;right:10px;border:none;background:#f0f0f0;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;">×</button>
+            <h3 style="text-align:center;margin-bottom:15px;color:#333;font-size:18px;">PDF数据格式示例</h3>
+            <img src="C:/Users/jj/.minimax-agent-cn/projects/7/image_1772433385483.png" alt="图例" style="max-width:100%;border:1px solid #ddd;">
+            <p style="margin-top:15px;font-size:13px;color:#666;line-height:1.6;">
+                <b>说明：</b>PDF表格共21列数据，依次为：<br>
+                第1列-年度、第2列-上年社平、第3列-月缴费基数、第4-8列（略）、<br>
+                第9列-累计储存额（用于计算个人账户养老金）<br>
+                <b style="color:#1890ff;">※ 复制时从"年度"列 第一行开始到"其中单位缴费累计"列最后一行结束</b>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 计发月数表（从Excel表格提取）====================
+        var monthTable = {
+            40:[233.0,232.8,232.5,232.3,232.0,231.8,231.5,231.3,231.0,230.8,230.5,230.3],
+            41:[230.0,229.7,229.3,229.0,228.7,228.3,228.0,227.7,227.3,227.0,226.7,226.3],
+            42:[226.0,225.8,225.5,225.3,225.0,224.8,224.5,224.3,224.0,223.8,223.5,223.3],
+            43:[223.0,222.8,222.5,222.3,222.0,221.8,221.5,221.3,221.0,220.8,220.5,220.3],
+            44:[220.0,219.7,219.3,219.0,218.7,218.3,218.0,217.7,217.3,217.0,216.7,216.3],
+            45:[216.0,215.7,215.3,215.0,214.7,214.3,214.0,213.7,213.3,213.0,212.7,212.3],
+            46:[212.0,211.7,211.3,211.0,210.7,210.3,210.0,209.7,209.3,209.0,208.7,208.3],
+            47:[208.0,207.7,207.3,207.0,206.7,206.3,206.0,205.7,205.3,205.0,204.7,204.3],
+            48:[204.0,203.6,203.2,202.8,202.3,201.9,201.5,201.1,200.7,200.3,199.8,199.4],
+            49:[199.0,198.7,198.3,198.0,197.7,197.3,197.0,196.7,196.3,196.0,195.7,195.3],
+            50:[195.0,194.6,194.2,193.8,193.3,192.9,192.5,192.1,191.7,191.3,190.8,190.4],
+            51:[190.0,189.6,189.2,188.8,188.3,187.9,187.5,187.1,186.7,186.3,185.8,185.4],
+            52:[185.0,184.6,184.2,183.8,183.3,182.9,182.5,182.1,181.7,181.3,180.8,180.4],
+            53:[180.0,179.6,179.2,178.8,178.3,177.9,177.5,177.1,176.7,176.3,175.8,175.4],
+            54:[175.0,174.6,174.2,173.8,173.3,172.9,172.5,172.1,171.7,171.3,170.8,170.4],
+            55:[170.0,169.5,169.0,168.5,168.0,167.5,167.0,166.5,166.0,165.5,165.0,164.5],
+            56:[164.0,163.5,163.0,162.5,162.0,161.5,161.0,160.5,160.0,159.5,159.0,158.5],
+            57:[158.0,157.5,157.0,156.5,156.0,155.5,155.0,154.5,154.0,153.5,153.0,152.5],
+            58:[152.0,151.4,150.8,150.3,149.7,149.1,148.5,147.9,147.3,146.8,146.2,145.6],
+            59:[145.0,144.5,144.0,143.5,143.0,142.5,142.0,141.5,141.0,140.5,140.0,139.5],
+            60:[139.0,138.4,137.8,137.3,136.7,136.1,135.5,134.9,134.3,133.8,133.2,132.6],
+            61:[132.0,131.4,130.8,130.3,129.7,129.1,128.5,127.9,127.3,126.8,126.2,125.6],
+            62:[125.0,124.3,123.7,123.0,122.3,121.7,121.0,120.3,119.7,119.0,118.3,117.7],
+            63:[117.0,116.3,115.7,115.0,114.3,113.7,113.0,112.3,111.7,111.0,110.3,109.7],
+            64:[109.0,108.3,107.7,107.0,106.3,105.7,105.0,104.3,103.7,103.0,102.3,101.7],
+            65:[101.0,100.3,99.7,99.0,98.3,97.7,97.0,96.3,95.7,95.0,94.3,93.7],
+            66:[93.0,92.3,91.5,90.8,90.0,89.3,88.5,87.8,87.0,86.3,85.5,84.8],
+            67:[84.0,83.3,82.5,81.8,81.0,80.3,79.5,78.8,78.0,77.3,76.5,75.8],
+            68:[75.0,74.2,73.3,72.5,71.7,70.8,70.0,69.2,68.3,67.5,66.7,65.8],
+            69:[65.0,64.3,63.5,62.8,62.0,61.3,60.5,59.8,59.0,58.3,57.5,56.8],
+            70:[56.0,null,null,null,null,null,null,null,null,null,null,null]
+        };
+        
+        // 全局数据
+        var parsedData = { pensionData: [], lastYearData: null, lastYearIndex: 0 };
+        var retireInfo = { normal: {}, delayed: {} };
+        
+        // ==================== 正确的延迟退休计算 ====================
+        // 公式：
+        // 男性（原60岁→延迟至63岁）：60 + [((出生年份-1965)×12 + 出生月份] ÷ 4
+        // 原55岁女职工（延迟至58岁）：55 + [((出生年份-1970)×12 + 出生月份] ÷ 4  
+        // 原50岁女职工（延迟至55岁）：50 + [((出生年份-1975)×12 + 出生月份] ÷ 2
+        // 月份不足1整月按1个月计（向上取整）
+        
+        function calculateRetireOptions() {
+            var birthMonth = document.getElementById('birthMonth').value;
+            var workerType = document.getElementById('workerType').value;
+            
+            if (!birthMonth || birthMonth.length !== 6) return;
+            
+            var birthYear = parseInt(birthMonth.substring(0, 4));
+            var birthMon = parseInt(birthMonth.substring(4, 6));
+            
+            // 基础退休年龄和基准年份
+            var baseAge, baseYear, divisor;
+            if (workerType === 'male') {
+                baseAge = 60;
+                baseYear = 1965;
+                divisor = 4;
+            } else if (workerType === 'female55') {
+                baseAge = 55;
+                baseYear = 1970;
+                divisor = 4;
+            } else { // female50
+                baseAge = 50;
+                baseYear = 1975;
+                divisor = 2;
+            }
+            
+            // 法定退休日期（不延迟）
+            var normalYear = birthYear + baseAge;
+            var normalMonth = birthMon;
+            var normalMonths = getPensionMonths(baseAge, 0);
+            
+            retireInfo.normal = { year: normalYear, month: normalMonth, months: normalMonths };
+            document.getElementById('normalDate').textContent = normalYear + '-' + String(normalMonth).padStart(2,'0');
+            document.getElementById('normalMonths').textContent = normalMonths;
+            
+            // 计算延迟月数 = ceil(((出生年份-基准年份)×12 + 出生月份) ÷ 除数)
+            // 注意：出生月份从1开始计算
+            var monthsDiff = (birthYear - baseYear) * 12 + birthMon;
+            var delayMonths = Math.ceil(monthsDiff / divisor);
+            
+            // 计算延迟后的退休年龄（总月数）
+            var totalAgeMonths = baseAge * 12 + delayMonths;
+            var delayedAgeYears = Math.floor(totalAgeMonths / 12);
+            var delayedAgeMonths = totalAgeMonths % 12;
+            
+            // 计算延迟后的退休日期 = 出生日期 + 延迟后的年龄
+            // 出生日期转月份：年份×12 + 月份
+            var birthTotalMonths = birthYear * 12 + birthMon;
+            var retireTotalMonths = birthTotalMonths + delayedAgeYears * 12 + delayedAgeMonths;
+            var delayedYear = Math.floor(retireTotalMonths / 12);
+            var delayedMonth = retireTotalMonths % 12;
+            
+            // 获取计发月数
+            var delayedPensionMonths = getPensionMonths(delayedAgeYears, delayedAgeMonths);
+            
+            retireInfo.delayed = { 
+                year: delayedYear, 
+                month: delayedMonth, 
+                months: delayedPensionMonths,
+                delayMonths: delayMonths,
+                delayedAge: delayedAgeYears + '岁' + delayedAgeMonths + '个月'
+            };
+            
+            document.getElementById('delayedDate').textContent = delayedYear + '-' + String(delayedMonth).padStart(2,'0');
+            document.getElementById('delayedMonths').textContent = delayedPensionMonths;
+        }
+        
+        document.getElementById('birthMonth').onchange = calculateRetireOptions;
+        document.getElementById('workerType').onchange = calculateRetireOptions;
+        
+        // ==================== 解析PDF ====================
+        document.getElementById('parseBtn').onclick = function() {
+            var text = document.getElementById('pdfText').value.trim();
+            if (!text) { showError('请先复制PDF文本'); return; }
+            
+            try {
+                var cleanText = text.replace(/(\d+)\.\s+(\d+)/g, '$1.$2').replace(/,/g, '').replace(/\s+/g, ' ').trim();
+                
+                // 提取：年份、上年社平、月缴费基数、累计储存额（最后一列）
+                var pattern = /(\d{4})\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+([\d\.]+)\s+/g;
+                
+                var data = [];
+                var match;
+                while ((match = pattern.exec(cleanText)) !== null) {
+                    var year = parseInt(match[1]);
+                    var wage = parseFloat(match[2]) || 0;
+                    var base = parseFloat(match[3]) || 0;
+                    // 累计储存额是第9列(match[9])
+                    var total = parseFloat(match[9]) || 0;
+                    
+                    if (year >= 1990 && year <= 2030 && (wage > 0 || base > 0)) {
+                        data.push({year: year, wage: wage, base: base, total: total});
+                    }
+                }
+                
+                var yearMap = {};
+                var uniqueData = [];
+                data.forEach(function(item) {
+                    if (!yearMap[item.year]) {
+                        yearMap[item.year] = true;
+                        uniqueData.push(item);
+                    }
+                });
+                uniqueData.sort(function(a, b) { return a.year - b.year; });
+                
+                if (uniqueData.length === 0) throw new Error('未解析到数据');
+                
+                // 指数 = 3列 / 2列 = 月缴费基数 / 上年社平
+                var calcData = uniqueData.map(function(item) {
+                    var index = item.wage > 0 ? (item.base / item.wage) : 0;
+                    return {year: item.year, wage: item.wage, base: item.base, total: item.total, index: index};
+                });
+                
+                var lastData = calcData[calcData.length - 1];
+                parsedData.pensionData = calcData;
+                parsedData.lastYearData = lastData;
+                parsedData.lastYearIndex = lastData.index;
+                
+                // 显示
+                document.getElementById('startYear').textContent = calcData[0].year;
+                document.getElementById('endYear').textContent = calcData[calcData.length - 1].year;
+                document.getElementById('avgIndex').textContent = parsedData.lastYearIndex.toFixed(4);
+                document.getElementById('accountBalance').textContent = lastData.total.toFixed(0);
+                
+                // 表格
+                var tableHtml = '';
+                // 保存完整数据供展开/收起使用
+                window.pensionTableData = calcData;
+                window.tableExpanded = false;
+                
+                // 默认只显示第一行和最后一行
+                var displayData = [];
+                if (calcData.length > 2) {
+                    displayData = [calcData[0], calcData[calcData.length - 1]];
+                } else {
+                    displayData = calcData;
+                }
+                
+                displayData.forEach(function(item) {
+                    tableHtml += '<tr><td>'+item.year+'</td><td>'+item.wage.toFixed(2)+'</td><td>'+item.base.toFixed(2)+'</td><td>'+item.index.toFixed(4)+'</td><td>'+item.total.toFixed(2)+'</td></tr>';
+                });
+                document.getElementById('dataTable').innerHTML = tableHtml;
+                
+                // 更新展开按钮文字
+                var toggleBtn = document.getElementById('toggleTableBtn');
+                if (toggleBtn) {
+                    toggleBtn.textContent = calcData.length > 2 ? '展开全部 (' + calcData.length + '条)' : '收起';
+                }
+                
+                document.getElementById('resultSection').style.display = 'block';
+                hideError();
+                
+                // 初始化展开按钮状态
+                window.tableExpanded = false;
+                
+            } catch (err) {
+                showError('解析失败：' + err.message);
+            }
+        };
+        
+        // ==================== 展开/收起表格 ====================
+        document.getElementById('toggleTableBtn').onclick = function() {
+            var tableBody = document.getElementById('dataTable');
+            var toggleBtn = document.getElementById('toggleTableBtn');
+            var data = window.pensionTableData || [];
+            
+            window.tableExpanded = !window.tableExpanded;
+            
+            if (window.tableExpanded) {
+                // 展开全部
+                var tableHtml = '';
+                data.forEach(function(item) {
+                    tableHtml += '<tr><td>'+item.year+'</td><td>'+item.wage.toFixed(2)+'</td><td>'+item.base.toFixed(2)+'</td><td>'+item.index.toFixed(4)+'</td><td>'+item.total.toFixed(2)+'</td></tr>';
+                });
+                tableBody.innerHTML = tableHtml;
+                toggleBtn.textContent = '收起';
+            } else {
+                // 只显示第一行和最后一行
+                var tableHtml = '';
+                if (data.length > 2) {
+                    tableHtml += '<tr><td>'+data[0].year+'</td><td>'+data[0].wage.toFixed(2)+'</td><td>'+data[0].base.toFixed(2)+'</td><td>'+data[0].index.toFixed(4)+'</td><td>'+data[0].total.toFixed(2)+'</td></tr>';
+                    tableHtml += '<tr><td>'+data[data.length-1].year+'</td><td>'+data[data.length-1].wage.toFixed(2)+'</td><td>'+data[data.length-1].base.toFixed(2)+'</td><td>'+data[data.length-1].index.toFixed(4)+'</td><td>'+data[data.length-1].total.toFixed(2)+'</td></tr>';
+                } else {
+                    data.forEach(function(item) {
+                        tableHtml += '<tr><td>'+item.year+'</td><td>'+item.wage.toFixed(2)+'</td><td>'+item.base.toFixed(2)+'</td><td>'+item.index.toFixed(4)+'</td><td>'+item.total.toFixed(2)+'</td></tr>';
+                    });
+                }
+                tableBody.innerHTML = tableHtml;
+                toggleBtn.textContent = '展开全部 (' + data.length + '条)';
+            }
+        };
+        
+        // ==================== 重置全部 ====================
+        document.getElementById('resetBtn').onclick = function() {
+            // 清空所有输入框
+            document.getElementById('birthMonth').value = '';
+            document.getElementById('workStartMonth').value = '';
+            document.getElementById('accountStartMonth').value = '199601';
+            document.getElementById('currentYear').value = '2026';
+            document.getElementById('currentBase').value = '';
+            document.getElementById('baseGrowthRate').value = '3';
+            document.getElementById('wageGrowthRate').value = '3';
+            document.getElementById('pdfText').value = '';
+            
+            // 隐藏结果显示区域
+            document.getElementById('resultSection').style.display = 'none';
+            document.getElementById('finalResult').style.display = 'none';
+            
+            // 清空解析数据
+            parsedData = { pensionData: [], lastYearData: null, lastYearIndex: 0 };
+            retireInfo = { normal: {}, delayed: {} };
+            
+            // 重置退休信息显示
+            document.getElementById('normalDate').textContent = '-';
+            document.getElementById('normalMonths').textContent = '-';
+            document.getElementById('delayedDate').textContent = '-';
+            document.getElementById('delayedMonths').textContent = '-';
+            
+            // 清空数据明细
+            document.getElementById('startYear').textContent = '-';
+            document.getElementById('endYear').textContent = '-';
+            document.getElementById('avgIndex').textContent = '-';
+            document.getElementById('accountBalance').textContent = '-';
+            
+            // 隐藏错误
+            hideError();
+        };
+        
+        // ==================== 图例按钮 ====================
+        document.getElementById('legendBtn').onclick = function() {
+            document.getElementById('legendModal').style.display = 'flex';
+        };
+        
+        // ==================== 计算退休金 ====================
+        document.getElementById('calcBtn').onclick = function() {
+            try {
+                var birthMonth = document.getElementById('birthMonth').value;
+                var baseGrowthRate = parseFloat(document.getElementById('baseGrowthRate').value) || 0;
+                var wageGrowthRate = parseFloat(document.getElementById('wageGrowthRate').value) || 0;
+                var currentBase = parseFloat(document.getElementById('currentBase').value) || 0;
+                var accountStartMonth = document.getElementById('accountStartMonth').value;
+                
+                if (!birthMonth) throw new Error('请输入出生年月');
+                if (!currentBase) throw new Error('请输入当前计发基数');
+                var workStartMonthCheck = document.getElementById('workStartMonth').value;
+                if (!workStartMonthCheck) throw new Error('请输入参加工作日期');
+                
+                // 使用延迟退休日期
+                var retireYear = retireInfo.delayed.year;
+                var retireMonth = retireInfo.delayed.month;
+                var pensionMonths = retireInfo.delayed.months;
+                
+                // 计算缴费年限和视同缴费年限
+                var workStartMonth = document.getElementById('workStartMonth').value;
+                var workStartYear = workStartMonth ? parseInt(workStartMonth.substring(0,4)) : 1996;
+                var workStartMon = workStartMonth ? parseInt(workStartMonth.substring(4,6)) : 1;
+                var accountYear = accountStartMonth ? parseInt(accountStartMonth.substring(0,4)) : 1996;
+                var accountMon = accountStartMonth ? parseInt(accountStartMonth.substring(4,6)) : 1;
+                // 199601视为199512来处理视同缴费
+                if (accountYear === 1996 && accountMon === 1) {
+                    accountYear = 1995;
+                    accountMon = 12;
+                }
+                var birthYear = parseInt(birthMonth.substring(0,4));
+                
+                // 视同缴费年限 = 建账年份 - 参加工作年份（精确到月，保留两位小数）
+                // 计算月份差：先算年份差，再处理月份借位
+                var yearDiffAsPension = accountYear - workStartYear;
+                var monthDiffAsPension = accountMon - workStartMon;
+                if (monthDiffAsPension < 0) {
+                    yearDiffAsPension -= 1;
+                    monthDiffAsPension += 12;
+                }
+                var yearsAsPension = yearDiffAsPension + monthDiffAsPension / 12;
+                yearsAsPension = Math.max(0, yearsAsPension);
+                
+                // 总缴费年限 = 退休年份 - 参加工作年份（精确到月，保留两位小数）
+                var yearDiffTotal = retireYear - workStartYear;
+                var monthDiffTotal = retireMonth - workStartMon;
+                if (monthDiffTotal < 0) {
+                    yearDiffTotal -= 1;
+                    monthDiffTotal += 12;
+                }
+                var totalYears = yearDiffTotal + monthDiffTotal / 12;
+                totalYears = Math.max(0, totalYears);
+                
+                // 最后一年数据
+                var lastData = parsedData.lastYearData;
+                var lastIndex = parsedData.lastYearIndex;
+                var currentYearData = lastData.year;
+                
+                // ===== 1. 计算个人账户储存额 =====
+                // X=最后数据年, A=上年平均工资, B=月平均缴费基数, C=指数, D=累计储存额(第9列，X-1年末的累计)
+                var X = currentYearData;
+                var A = lastData.wage;
+                var B = lastData.base;
+                var C = lastIndex;
+                var D = lastData.total;  // 这是X-1年末的累计储存额
+                
+                // D是X-1年末的累计，需要加上X年(最后一年)的个人缴纳部分
+                var lastYearPay = B * 0.08 * 12;
+                var accountBalance = D + lastYearPay;
+                
+                // 预测未来年份：从X+1年到退休年Y
+                var futureBase = B;
+                for (var year = X + 1; year <= retireYear; year++) {
+                    // 当年月平均缴费基数 = 上年平均工资 * (1+增长率) * 指数
+                    futureBase = A * (1 + wageGrowthRate / 100) * C;
+                    // 更新上年平均工资
+                    A = A * (1 + wageGrowthRate / 100);
+                    // 计算个人缴纳部分
+                    var months = (year === retireYear) ? retireMonth : 12;
+                    var personalPay = futureBase * 0.08 * months;
+                    accountBalance += personalPay;
+                }
+                
+                // ===== 2. 计算平均指数 =====
+                // 计算从建账年份到退休年份的平均指数（包括预测的未来年份）
+                var sumKnownIndex = 0;
+                parsedData.pensionData.forEach(function(item) { sumKnownIndex += item.index; });
+                var knownYears = parsedData.pensionData.length;
+                var futureYears = retireYear - currentYearData;
+                var totalYearsForIndex = knownYears + futureYears;
+                var totalIndex = sumKnownIndex + (lastIndex * futureYears);
+                var finalAvgIndex = totalIndex / totalYearsForIndex;
+                
+                // ===== 3. 计算计发基数 =====
+                // 退休年份是Y，则用(Y-1)年的计发基数
+                // currentBase是当前年份的基数，需要增长到退休前一年
+                var inputCurrentYear = parseInt(document.getElementById('currentYear').value) || 2026;
+                var yearsToRetire = retireYear - inputCurrentYear;
+                var finalBase = currentBase;
+                for (var y = 0; y < yearsToRetire; y++) {
+                    finalBase = finalBase * (1 + baseGrowthRate / 100);
+                }
+                
+                // ===== 4. 计算退休金 =====
+                var indexedWage = finalBase * finalAvgIndex;
+                var basePension = (finalBase + indexedWage) / 2 * totalYears * 0.01;
+                var personalPension = accountBalance / pensionMonths;
+                var transitionPension = indexedWage * yearsAsPension * 0.012;
+                // 调节金：职工建立个人账户前的视同缴费年限满15年及以上者，每人每月发给15元
+                var adjustmentPension = yearsAsPension >= 15 ? 15 : 0;
+                var total = basePension + personalPension + transitionPension + adjustmentPension;
+                
+                // 显示结果
+                document.getElementById('basicPension').textContent = '¥' + basePension.toFixed(2);
+                document.getElementById('personalPension').textContent = '¥' + personalPension.toFixed(2);
+                document.getElementById('transitionPension').textContent = '¥' + transitionPension.toFixed(2);
+                document.getElementById('adjustmentPension').textContent = '¥' + adjustmentPension.toFixed(2);
+                document.getElementById('totalPension').textContent = '¥' + total.toFixed(2);
+                
+                // 显示更多明细
+                document.getElementById('totalYears').textContent = totalYears.toFixed(2) + '年';
+                document.getElementById('yearsAsPension').textContent = yearsAsPension.toFixed(2) + '年';
+                document.getElementById('finalAvgIndex').textContent = finalAvgIndex.toFixed(4);
+                document.getElementById('finalAccount').textContent = '¥' + accountBalance.toFixed(0);
+                document.getElementById('finalBase').textContent = '¥' + finalBase.toFixed(0);
+                document.getElementById('retireYear').textContent = retireYear + '年';
+                
+                document.getElementById('finalResult').style.display = 'block';
+                document.getElementById('finalResult').scrollIntoView({behavior: 'smooth'});
+                
+            } catch (err) {
+                showError(err.message);
+            }
+        };
+        
+        function getPensionMonths(age, months) {
+            if (age < 40) age = 40;
+            if (age > 70) age = 70;
+            var monthKey = Math.min(11, Math.max(0, months));
+            var arr = monthTable[age];
+            return arr && arr[monthKey] !== null ? arr[monthKey] : arr[0];
+        }
+        
+        function showError(msg) {
+            document.getElementById('error').textContent = msg;
+            document.getElementById('error').style.display = 'block';
+        }
+        
+        function hideError() {
+            document.getElementById('error').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
